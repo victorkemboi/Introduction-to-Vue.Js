@@ -119,6 +119,12 @@ var app =  new Vue({
         updateProduct: function (variant){
             this.image = variant.variantImage;
             this.activeVariant = variant
+
+            if(this.activeVariant.amount>0){
+                this.inStock = true
+            }else{
+                this.inStock = false
+            }
         },
         removeFromCart: function(){
 
