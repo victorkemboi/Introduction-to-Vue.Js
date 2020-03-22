@@ -1,7 +1,42 @@
 
+Vue.component(
+    'product-details',
+   { props:{
+       activeVariant:{
+           type: Object,
+           required: true
+       },
+       
+   },
+       
+    template: `
+
+    <ul>
+        <li 
+        v-for="detail in details">
+        {{detail}} </li>
+        <li> Size: {{
+            activeVariant.size
+        }}</li>
+    </ul>
+    
+   `,
+   data(){
+       return{
+        details:["80% cotton","20% Polyester", "Gender-neutral"],
+       }
+   }
+}
+)
 
 
 Vue.component('product',{
+    props:{
+        premium:{
+            type:Boolean,
+            required: true
+        }
+    },
     template: `
     <div class="product">
                 <div class="product-image">
@@ -20,17 +55,17 @@ Vue.component('product',{
                      
                             Out of Stock! </p>
 
-                    <ul>
-                        <li v-for="detail in details">{{detail}}</li>
-                        <li>Size: {{
-                            activeVariant.size
-                        }}</li>
-                    </ul>
+                            <p>Shipping {{shipping}}<p/>
+
+                            <product-details :activeVariant="activeVariant">
+
+                            </product-details> 
+                    
                     <div v-for="variant in variants" 
                     :key="variant.variantId"
                     class="color-box"
                     :style = "{backgroundColor: variant.variantColor}"
-                    @mouseOver="updateProduct(variant)"
+                    @mouseover="updateProduct(variant)"
                     >
                     
                     <p style="color: white;">{{variant.amount}}</p>
@@ -56,7 +91,9 @@ Vue.component('product',{
                
 
         </div>
-    `,data()
+
+    `
+    ,data()
     {
         return {
             product: 'Socks',
@@ -64,7 +101,7 @@ Vue.component('product',{
             image:"./assets/img/green_sock.png",
             link: "https://www.vuejs.org",
             inStock: true,
-            details:["80% cotton","20% Polyester", "Gender-neutral"],
+            
             variants:[
                 {
                     variantId: 2234,
@@ -249,6 +286,15 @@ Vue.component('product',{
     },
     beforeMount(){
         this.initActiveVariant()
+     },
+     computed:{
+         shipping(){
+             if(this.premium){
+                 return "Free"
+             }else{
+                 2.99
+             }
+         }
      }
 
 }
@@ -256,6 +302,9 @@ Vue.component('product',{
 
 
 var app =  new Vue({
-    el: '#app'
+    el: '#app',
+    data:{
+        premium: true
+    }
     
 })
