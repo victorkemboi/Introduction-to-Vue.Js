@@ -1,4 +1,10 @@
 Vue.component(
+    'prodduct-customization',{
+        template: ``
+    }
+)
+
+Vue.component(
     'product-review',
     {
         template: `
@@ -135,38 +141,91 @@ Vue.component('product',{
                     <h1>{{product}}</h1>
                    
                 
-                    <p v-if="inStock">In Stock.</p>
+                    <p v-if="inStock" style="display: inline-block;">
+                      In Stock.
+                        
+                    </p>
                     <p  v-else :class="{outOfStock : !inStock}"
                      >
                      
                             Out of Stock! </p>
 
-                            <p>Shipping {{shipping}}<p/>
+                            <div class="color-circle" style="display: inline-block;  text-align: center;"   >
+                                <p>{{activeVariant.amount}}</p>
+                            </div>
+
+                            <p>Shipping: {{shipping}}<p/>
 
                             <product-details :activeVariant="activeVariant">
 
                             </product-details> 
                     
-                    <div v-for="variant in variants" 
-                    :key="variant.variantId"
-                    class="color-box"
-                    :style = "{backgroundColor: variant.variantColor}"
-                    @mouseover="updateProduct(variant)"
+                 <!--   <div v-for="variant in variants" 
+                        :key="variant.variantId"
+                        class="color-box"
+                        :style = "{backgroundColor: variant.variantColor}"
+                        @mouseover="updateProduct(variant)"
                     >
                     
                     <p style="color: white;">{{variant.amount}}</p>
                     </div>
-                    
+                    -->
+
+                    <div class="customize-product" >
+
+                        <div style="display: inline-block;">
+                                    <p>Select color:
+                                    <div 
+                                    class="color-box" 
+                                    style = "backgroundColor: green; " 
+                                    @mouseover="updateColor('green')"
+                                    >
+                                    </div>
+                                    <div 
+                                        class="color-box" 
+                                        style = "backgroundColor: blue;"
+                                        @mouseover="updateColor('blue')"
+                                        >
+                                    </div>
+                        </div>
+
+                        <div style="display: inline-block; margin-left: 15px;">
+
+                                <form>
+                                    
+                                    <label for="size">Select size: </label>
+                                    <select id="size" v-on:onchange="findCustomProduct"  v-model="selectedSize">
+                                        
+                                        <option value= "x-large">X-Large</option>
+                                        <option value= "large">Large</option>
+                                        <option value= "medium" selected>Medium</option>
+                                        <option value= "small"  >Small</option>
+                                    </select>
+                                    
+                                </form>
+                        </div>
+
+                    </div>
 
                     
 
-                    <button v-on:click="addToCart()"
-                     :disabled ="!inStock" :class="{disabledButton:!inStock}">
-                     Add to Cart</button>
+                    <div >
+                    <button
+                        v-on:click="addToCart"
+                        :disabled ="!inStock" 
+                        :class="{disabledButton:!inStock}"
+                        style="float: center"
+                        >
+                            Add to
+                             Cart
+                     </button>
 
                    
 
-                    <button v-on:click="removeFromCart">Remove from Cart</button>
+                    <button 
+                        v-on:click="removeFromCart">Remove from Cart</button>
+
+                        </div>
 
                     <div>
 
@@ -269,6 +328,8 @@ Vue.component('product',{
                 },
             ],
            
+            selectedColor: null,
+            selectedSize: null,
             activeVariant:null,
             reviews: []
         }
@@ -276,6 +337,30 @@ Vue.component('product',{
     } ,
 
     methods:{
+        updateColor: function(color){
+
+            this.selectedColor = color
+            this.findCustomProduct()
+        }
+        
+    ,
+       findCustomProduct(){
+
+        if(this.selectedColor ==null){
+
+            this.selectedColor = this.activeVariant.variantColor
+        }
+        if(this.selectedSize ==null){
+            this.selectedSize = this.activeVariant.size
+        }
+       
+          let sameColor=  this.variants.filter((variant) => {return variant.variantColor == this.selectedColor})
+          
+          let sameSize=  sameColor.find((variant) => {return variant.size == this.selectedSize})
+   
+          
+          this.updateProduct(sameSize)
+       },
         addToCart: function(){
 
             //check if variant in cart and cart items is not zero
@@ -285,14 +370,11 @@ Vue.component('product',{
 
         },
         updateProduct: function (variant){
+           
             this.image = variant.variantImage;
             this.activeVariant = variant
 
-            if(this.activeVariant.amount>0){
-                this.inStock = true
-            }else{
-                this.inStock = false
-            }
+        
         },
         removeFromCart: function(){
                 this.$emit("remove-from-cart", this.activeVariant)
@@ -308,6 +390,7 @@ Vue.component('product',{
     },
     beforeMount(){
         this.initActiveVariant()
+        this.findCustomProduct()
      },
      computed:{
          shipping(){
@@ -317,7 +400,23 @@ Vue.component('product',{
                  2.99
              }
          }
-     }
+     },
+     watch: {
+         selectedSize: function(val,oldVal){
+            
+             this.findCustomProduct()
+         },
+         'activeVariant.amount': function(val,oldVal){
+
+    
+            if(val>0){
+              this.inStock = true
+            }else{
+               this.inStock = false
+            }
+            
+         }
+     },
 
 }
 )
