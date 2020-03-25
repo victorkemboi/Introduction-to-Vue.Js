@@ -1,6 +1,81 @@
 Vue.component(
-    'prodduct-customization',{
-        template: ``
+    'product-customization',{
+         props:{
+            activeVariant:{
+                type: Object,
+                required: true
+            },
+            
+        },
+        template: `
+                    <div class="customize-product" >
+
+                        <div style="display: inline-block;">
+                                    <p>Select color:
+                                    <div 
+                                    class="color-box" 
+                                    style = "backgroundColor: green; " 
+                                    @mouseover="updateColor('green')"
+                                    >
+                                    </div>
+                                    <div 
+                                        class="color-box" 
+                                        style = "backgroundColor: blue;"
+                                        @mouseover="updateColor('blue')"
+                                        >
+                                    </div>
+                        </div>
+
+                        <div style="display: inline-block; margin-left: 15px;">
+
+                                <form>
+                                    
+                                    <label for="size">Select size: </label>
+                                    <select id="size" v-on:onchange="optionsChanged"  v-model="size">
+                                        
+                                        <option value= "x-large">X-Large</option>
+                                        <option value= "large">Large</option>
+                                        <option value= "medium" selected>Medium</option>
+                                        <option value= "small"  >Small</option>
+                                    </select>
+                                    
+                                </form>
+                        </div>
+
+                    </div>
+        `,
+        data(){
+            return {
+                size:this.activeVariant.size    ,
+                color: this.activeVariant.variantColor        
+            }
+        },
+        methods:{
+            optionsChanged:  function(){
+               
+             let   variant = {
+                 size : this.size,
+                 color : this.color
+             }
+                
+                this.$emit('options-changed', variant)
+            },
+            updateColor: function(color){
+                
+
+                this.color = color
+            }
+        },
+        watch:{
+            size: function(val,oldVal){
+                this.optionsChanged()
+            },
+            color: function(val,oldVal){
+                this.optionsChanged()
+            }
+
+        }
+
     }
 )
 
@@ -171,42 +246,12 @@ Vue.component('product',{
                     </div>
                     -->
 
-                    <div class="customize-product" >
+                    <!-- product custom -->
 
-                        <div style="display: inline-block;">
-                                    <p>Select color:
-                                    <div 
-                                    class="color-box" 
-                                    style = "backgroundColor: green; " 
-                                    @mouseover="updateColor('green')"
-                                    >
-                                    </div>
-                                    <div 
-                                        class="color-box" 
-                                        style = "backgroundColor: blue;"
-                                        @mouseover="updateColor('blue')"
-                                        >
-                                    </div>
-                        </div>
-
-                        <div style="display: inline-block; margin-left: 15px;">
-
-                                <form>
-                                    
-                                    <label for="size">Select size: </label>
-                                    <select id="size" v-on:onchange="findCustomProduct"  v-model="selectedSize">
-                                        
-                                        <option value= "x-large">X-Large</option>
-                                        <option value= "large">Large</option>
-                                        <option value= "medium" selected>Medium</option>
-                                        <option value= "small"  >Small</option>
-                                    </select>
-                                    
-                                </form>
-                        </div>
-
-                    </div>
-
+                    <product-customization
+                        :activeVariant="activeVariant"
+                        @options-changed = "findCustomProduct"
+                    ></product-customization>
                     
 
                     <div >
@@ -328,8 +373,6 @@ Vue.component('product',{
                 },
             ],
            
-            selectedColor: null,
-            selectedSize: null,
             activeVariant:null,
             reviews: []
         }
@@ -337,26 +380,15 @@ Vue.component('product',{
     } ,
 
     methods:{
-        updateColor: function(color){
-
-            this.selectedColor = color
-            this.findCustomProduct()
-        }
         
-    ,
-       findCustomProduct(){
+    
+       findCustomProduct(variantOptions){
 
-        if(this.selectedColor ==null){
-
-            this.selectedColor = this.activeVariant.variantColor
-        }
-        if(this.selectedSize ==null){
-            this.selectedSize = this.activeVariant.size
-        }
+        
        
-          let sameColor=  this.variants.filter((variant) => {return variant.variantColor == this.selectedColor})
+          let sameColor=  this.variants.filter((variant) => {return variant.variantColor == variantOptions.color})
           
-          let sameSize=  sameColor.find((variant) => {return variant.size == this.selectedSize})
+          let sameSize=  sameColor.find((variant) => {return variant.size == variantOptions.size})
    
           
           this.updateProduct(sameSize)
@@ -390,7 +422,7 @@ Vue.component('product',{
     },
     beforeMount(){
         this.initActiveVariant()
-        this.findCustomProduct()
+        //this.findCustomProduct()
      },
      computed:{
          shipping(){
@@ -402,10 +434,7 @@ Vue.component('product',{
          }
      },
      watch: {
-         selectedSize: function(val,oldVal){
-            
-             this.findCustomProduct()
-         },
+         
          'activeVariant.amount': function(val,oldVal){
 
     
